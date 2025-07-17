@@ -1,0 +1,206 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>COVID-19 India Data</title>
+      <link rel="stylesheet" href="style.css" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet"
+      />
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          background: url('https://mir-s3-cdn-cf.behance.net/project_modules/1400/55021193887805.5e709fc3270f0.jpg');
+          background-size: cover;
+          color: #333;
+          line-height: 1.6;
+        }
+
+      .corona {
+          max-width: 1200px;
+          margin: 2rem auto;
+          padding: 2rem;
+          border-radius: 10px;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+          text-align: center;
+          background-color: transparent; 
+  }
+
+
+        h1 {
+          color: #1a5276;
+          margin-bottom: 1.5rem;
+          font-weight: 600;
+        }
+
+        .input-group {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 2rem;
+          gap: 10px;
+        }
+
+        input[type="date"] {
+          padding: 0.8rem 1rem;
+          border: 2px solid #ddd;
+          border-radius: 6px;
+          font-size: 1rem;
+          outline: none;
+          transition: border-color 0.3s;
+        }
+
+        input[type="date"]:focus {
+          border-color: #3498db;
+        }
+
+        button {
+          padding: 0.8rem 1.5rem;
+          background-color: #3498db;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 1rem;
+          font-weight: 500;
+          transition: background-color 0.3s;
+        }
+
+        button:hover {
+          background-color: #2980b9;
+        }
+
+        .cards-corona {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+        }
+
+        .card {
+          background-color: white;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+          transition: transform 0.2s;
+      }
+
+
+        .card:hover {
+          transform: scale(1.05);
+        }
+        .card h3 {
+          margin: 0 0 10px;
+          color: #333;
+        }
+        .card p {
+          margin: 5px 0;
+          color: #555;
+        }
+
+        .sub-heading {
+          font-size: 1.5rem;
+          color: #1a5276;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="corona" align="center">
+        <h1>COVID-19 API</h1>
+        <div class="input-group">
+          <input type="date" id="dateInput" placeholder="Select a date" />
+          <button onclick="fetchData()">Get Data</button>
+        </div>
+
+        <div>
+              <h2 id="total"></h2>
+              <h2 id="recover"></h2>
+              <h2 id="deth"></h2>
+        </div>
+
+        <h2 class="sub-heading" style="display: none; margin: 35px 0; ">State Wise Case Data</h2>
+        <div id="cardscorona" class="cards-corona"></div>
+      </div>
+
+      <script>
+        function fetchData() {
+          document.querySelector(".sub-heading").style.display = "block";
+
+          let dateInput = document.getElementById("dateInput").value;
+          if (!dateInput) {
+            alert("Please select a date!");
+            return;
+          }
+
+          fetch("https://api.rootnet.in/covid19-in/stats/history")
+            .then((res) => {
+              if (res.status !== 200) {
+                throw new Error("Network response status was not 200");
+              }
+              return res.json();
+            })
+            .then((data) => {
+              let selectedDateData = data.data.find(
+                (entry) => entry.day === dateInput
+              );
+
+              if (!selectedDateData) {
+                alert("No data found for the selected date!");
+                return;
+              }
+
+              displayData(selectedDateData);
+            })
+            .catch((error) => {
+              alert("An error occurred while fetching data.");
+            });
+        }
+
+        function displayData(data) {
+          let cardscorona = document.getElementById("cardscorona");
+          let total = document.getElementById('total')
+          let recover = document.getElementById('recover')
+          let deth = document.getElementById('deth')
+          cardscorona.innerHTML = "";
+            total.innerHTML ="Total : " + data.summary.total
+            recover.innerHTML ="Recover : " + data.summary.discharged
+            deth.innerHTML = "Deth : " + data.summary.deaths
+          let regions = data.regional;
+
+          for (let i = 0; i < regions.length; i++) {
+            let state = regions[i];
+            let card = document.createElement("div");
+            card.className = "card";
+
+            let randomColor =
+              "#" +
+              Math.floor(Math.random() * 12378964)
+                .toString(16)
+                .padStart(6, "0");
+                card.style.backgroundColor = randomColor;
+
+
+
+          
+            card.innerHTML = `
+              <h3 style="color:black;">${state.loc}</h3>
+              <p style="color:white;"><strong>Total:</strong> ${state.totalConfirmed}</p>
+              <p style="color:white;"><strong>Recovered:</strong> ${state.discharged}</p>
+              <p style="color:white;"><strong>Deaths:</strong> ${state.deaths}</p>
+          `;
+
+            cardscorona.append(card);
+          }
+        }
+      </script>
+    </body>
+  </html>
